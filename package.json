@@ -1,0 +1,22 @@
+{
+  "name": "fog-mud-dropbox",
+  "version": "0.0.1",
+  "description": "Fog file-base backup to Dropbox",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/meschbach/fog-mud-dropbox.git"
+  },
+  "keywords": [
+    "fog-mud"
+  ],
+  "author": "Mark Eschbach <meschbach@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/meschbach/fog-mud-dropbox/issues"
+  },
+  "homepage": "https://github.com/meschbach/fog-mud-dropbox#readme"
+}
