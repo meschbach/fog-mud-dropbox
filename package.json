@@ -18,5 +18,9 @@
   "bugs": {
     "url": "https://github.com/meschbach/fog-mud-dropbox/issues"
   },
-  "homepage": "https://github.com/meschbach/fog-mud-dropbox#readme"
+  "homepage": "https://github.com/meschbach/fog-mud-dropbox#readme",
+  "dependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^6.0.2"
+  }
 }
