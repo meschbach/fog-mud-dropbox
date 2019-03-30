@@ -21,6 +21,9 @@
   "homepage": "https://github.com/meschbach/fog-mud-dropbox#readme",
   "dependencies": {
     "chai": "^4.2.0",
+    "dropbox": "^4.0.17",
+    "isomorphic-fetch": "^2.2.1",
+    "junk-bucket": "^1.1.1",
     "mocha": "^6.0.2"
   }
 }
