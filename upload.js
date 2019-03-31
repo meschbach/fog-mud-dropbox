@@ -11,5 +11,7 @@ main(async function (logger) {
 	}
 	const connection = new Dropbox({accessToken: token, fetch });
 	await connection.filesUpload({path: "/test", contents: "test"});
-	logger.info("Completed");
+	const file = await connection.filesDownload({path: "/test"});
+	const fileBlob = file.fileBinary.toString("utf-8");
+	logger.info("Completed", fileBlob);
 });
