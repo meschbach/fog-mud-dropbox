@@ -89,12 +89,72 @@ class ToString extends Transform {
 	}
 }
 
+
+class InMemoryVFS {
+	constructor() {
+		this.files = {};
+	}
+
+	async exists( file ){
+		return !!this.files[file];
+	}
+
+	async unlink( file ){
+		if( this.files[file] ){
+			delete this.files[file];
+		}
+	}
+
+	async createReadableStream( file ){
+		if( !(await this.exists(file)) ){
+			throw new Error("No such file "+ file);
+		}
+		return new MemoryReadable(this.files[file]);
+	}
+
+	async asBytes( file ){
+		return this.files[file];
+	}
+
+	async putBytes( file, bytes, encoding ){
+		this.files[file] = Buffer.from(bytes, encoding);
+	}
+
+	async createWritableStream( file ){
+		const writable = new MemoryWritable();
+		writable.on("finish", () => {
+			this.files[file] = writable.bytes;
+		});
+		return writable;
+	}
+}
+
+
+class MemoryReadable extends Readable {
+	constructor(source, props) {
+		super(props);
+		this.bytes = source;
+		this.pushed = false;
+	}
+
+	_read( size ){
+		if( !this.pushed ) {
+			this.pushed = true;
+			this.push(this.bytes);
+		} else {
+			this.push(null);
+		}
+	}
+}
+
 module.exports ={
 	crypto_random,
 	crypto_scrypt,
 	ToJSON,
 	ToString,
 	AsBuffer,
+	MemoryReadable,
 	MemoryWritable,
-	MemoryObjectWritable
+	MemoryObjectWritable,
+	InMemoryVFS
 };

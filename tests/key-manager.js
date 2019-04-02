@@ -100,22 +100,7 @@ class MemoryObjectWritable extends Writable {
 	}
 }
 
-class MemoryReadable extends Readable {
-	constructor(source, props) {
-		super(props);
-		this.bytes = source;
-		this.pushed = false;
-	}
-
-	_read( size ){
-		if( !this.pushed ) {
-			this.pushed = true;
-			this.push(this.bytes);
-		} else {
-			this.push(null);
-		}
-	}
-}
+const {MemoryReadable} = require("../junk");
 
 const {promiseEvent} = require("junk-bucket/future");
 const {KeyStore} = require("../keystore");
