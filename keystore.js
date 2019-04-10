@@ -23,7 +23,7 @@ function decryptJSONStream( key, iv, source ){
 	return json;
 }
 
-async function forPipe( from, to ){
+async function promisePiped( from, to ){
 	const completion = promiseEvent( to, "finish");
 	const result = from.pipe(to);
 	await completion;
@@ -111,7 +111,7 @@ class KeyStore {
 			const parameters = await this.vfs.createReadableStream(keyName);
 			const cipher = crypto.createCipheriv(algorithm, this.rootKey.key, this.rootKey.iv);
 			const memoryBuffer = new MemoryWritable();
-			await forPipe(parameters.pipe(cipher),memoryBuffer);
+			await promisePiped(parameters.pipe(cipher),memoryBuffer);
 
 			console.log("Buffer length: ", memoryBuffer.bytes.length);
 			const key = memoryBuffer.bytes.slice(0,16);
@@ -168,22 +168,16 @@ class KeyManagedVFS {
 	}
 
 	async putBytes( file, bytes ){
-		const cipherSink = await this.keys.cipherStreamFor( file );
-		const output = await this.vfs.createWritableStream(file);
-
-		cipherSink.pipe(output);
-		const done = promiseEvent(output,"finish");
-		cipherSink.end(bytes);
+		const outputStream = await this.createWritableStream(file);
+		const done = promiseEvent(outputStream,"finish");
+		outputStream.end(bytes);
 		await done;
 	}
 
 	async asBytes( file ){
 		const buffer = new MemoryWritable();
-		const decipherment = await this.keys.decipherStreamFor( file );
-		const source = await this.vfs.createReadableStream(file);
-		const completed = promiseEvent(buffer,"finish");
-		source.pipe(decipherment).pipe(buffer);
-		await completed;
+		const inputStream = await this.createReadableStream(file);
+		await promisePiped(inputStream,buffer);
 		return buffer.bytes;
 	}
 
@@ -192,6 +186,17 @@ class KeyManagedVFS {
 		const output = await this.vfs.createWritableStream(file);
 		cipherSink.pipe(output);
 		return cipherSink;
+	}
+
+	async createReadableStream( file ){
+		const inputStream = await this.vfs.createReadableStream(file);
+		const cipherTransform = await this.keys.decipherStreamFor(file);
+		inputStream.pipe(cipherTransform);
+		return cipherTransform;
+	}
+
+	async exists(file){
+		return await this.vfs.exists(file);
 	}
 }
 
