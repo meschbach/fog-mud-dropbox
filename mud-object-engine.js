@@ -1,10 +1,11 @@
 const {parallel, promiseEvent} = require("junk-bucket/future");
+const assert = require("assert");
 
 async function pushObject( f, mud, target ){
-	const [from,to] = await parallel([
-		await mud.forContainer(f.container).createReadableStream(f.key),
-		await target.createWritableStream(f.container + "/" + f.key)
-	]);
+	assert(target);
+	const to = await target.createWritableStream(f.container + "/" + f.key);
+	const from = await mud.forContainer(f.container).createReadableStream(f.key);
+
 	const completed = promiseEvent(to, "finish");
 	from.pipe(to);
 	return await completed;

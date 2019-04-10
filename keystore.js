@@ -23,6 +23,13 @@ function decryptJSONStream( key, iv, source ){
 	return json;
 }
 
+async function forPipe( from, to ){
+	const completion = promiseEvent( to, "finish");
+	const result = from.pipe(to);
+	await completion;
+	return result;
+}
+
 class KeyStore {
 	constructor(vfs) {
 		this.vfs = vfs;
@@ -101,6 +108,15 @@ class KeyStore {
 		const keyName = "keys.0/" + hash;
 		if( await this.vfs.exists(keyName) ){
 			//Load key details
+			const parameters = await this.vfs.createReadableStream(keyName);
+			const cipher = crypto.createCipheriv(algorithm, this.rootKey.key, this.rootKey.iv);
+			const memoryBuffer = new MemoryWritable();
+			await forPipe(parameters.pipe(cipher),memoryBuffer);
+
+			console.log("Buffer length: ", memoryBuffer.bytes.length);
+			const key = memoryBuffer.bytes.slice(0,16);
+			const iv = memoryBuffer.bytes.slice(16, 32);
+			return crypto.createCipheriv(algorithm, key, iv);
 		} else {
 			//Generate a new key
 			const key = await crypto_random(16);
@@ -169,6 +185,13 @@ class KeyManagedVFS {
 		source.pipe(decipherment).pipe(buffer);
 		await completed;
 		return buffer.bytes;
+	}
+
+	async createWritableStream( file ){
+		const cipherSink = await this.keys.cipherStreamFor( file );
+		const output = await this.vfs.createWritableStream(file);
+		cipherSink.pipe(output);
+		return cipherSink;
 	}
 }
 
