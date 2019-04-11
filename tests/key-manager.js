@@ -34,6 +34,10 @@ describe("KeyStore", function () {
 			expect(await this.keyManager.isInitialized()).to.be.true;
 		});
 
+		it("the file name is encrypted", async function () {
+			expect(await this.vfs.exists(this.reloadFileName)).to.be.false;
+		});
+
 		it("is not in plain text", async function () {
 			let problem = false;
 			try {

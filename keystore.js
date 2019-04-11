@@ -157,6 +157,13 @@ class KeyStore {
 	}
 
 	async asVFS(){ return new KeyManagedVFS( this, this.vfs ); }
+
+	async nameForFile( file ){
+		const hash = crypto.createHmac('sha256', this.rootKey.iv)
+			.update(file)
+			.digest('hex');
+		return hash;
+	}
 }
 
 
@@ -167,35 +174,40 @@ class KeyManagedVFS {
 	}
 
 	async putBytes( file, bytes ){
-		const outputStream = await this.createWritableStream(file);
+		const encryptedFileName = await this.keys.nameForFile(file);
+		const outputStream = await this.createWritableStream(encryptedFileName);
 		const done = promiseEvent(outputStream,"finish");
 		outputStream.end(bytes);
 		await done;
 	}
 
 	async asBytes( file ){
+		const encryptedFileName = await this.keys.nameForFile(file);
 		const buffer = new MemoryWritable();
-		const inputStream = await this.createReadableStream(file);
+		const inputStream = await this.createReadableStream(encryptedFileName);
 		await promisePiped(inputStream,buffer);
 		return buffer.bytes;
 	}
 
 	async createWritableStream( file ){
 		const cipherSink = await this.keys.cipherStreamFor( file );
-		const output = await this.vfs.createWritableStream(file);
+		const encryptedFileName = await this.keys.nameForFile(file);
+		const output = await this.vfs.createWritableStream(encryptedFileName);
 		cipherSink.pipe(output);
 		return cipherSink;
 	}
 
 	async createReadableStream( file ){
-		const inputStream = await this.vfs.createReadableStream(file);
+		const encryptedFileName = await this.keys.nameForFile(file);
+		const inputStream = await this.vfs.createReadableStream(encryptedFileName);
 		const cipherTransform = await this.keys.decipherStreamFor(file);
 		inputStream.pipe(cipherTransform);
 		return cipherTransform;
 	}
 
 	async exists(file){
-		return await this.vfs.exists(file);
+		const encryptedFileName = await this.keys.nameForFile(file);
+		return await this.vfs.exists(encryptedFileName);
 	}
 }
 
