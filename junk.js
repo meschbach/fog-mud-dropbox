@@ -113,7 +113,7 @@ class InMemoryVFS {
 	}
 
 	async asBytes( file ){
-		return this.files[file];
+		return this.files[file];//TODO: This should provide a copy, not the original
 	}
 
 	async putBytes( file, bytes, encoding ){
