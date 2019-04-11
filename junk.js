@@ -1,8 +1,15 @@
+/*
+ * Cryptography adaption
+ */
 const crypto = require("crypto");
 const {promisify} = require("util");
+
 const crypto_random = promisify(crypto.randomBytes);
 const crypto_scrypt = promisify(crypto.scrypt);
 
+/*
+ * Streams
+ */
 const {Transform, Writable, Readable} = require("stream");
 
 class ToJSON extends Transform {
