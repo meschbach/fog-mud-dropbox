@@ -113,7 +113,6 @@ class KeyStore {
 			const memoryBuffer = new MemoryWritable();
 			await promisePiped(parameters.pipe(cipher),memoryBuffer);
 
-			console.log("Buffer length: ", memoryBuffer.bytes.length);
 			const key = memoryBuffer.bytes.slice(0,16);
 			const iv = memoryBuffer.bytes.slice(16, 32);
 			return crypto.createCipheriv(algorithm, key, iv);
