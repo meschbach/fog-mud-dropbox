@@ -35,6 +35,12 @@ class KeyStore {
 		this.vfs = vfs;
 	}
 
+	requireUnsealed( operation = "unknown"){
+		if( !this.rootKey ) {
+			throw new Error("KeyStore must be unsealed before performing " + operation);
+		}
+	}
+
 	async isInitialized() {
 		if( !await this.vfs.exists("keys.v0") ) return false;
 		return true;
@@ -159,13 +165,13 @@ class KeyStore {
 	async asVFS(){ return new KeyManagedVFS( this, this.vfs ); }
 
 	async nameForFile( file ){
+		this.requireUnsealed("nameForFile");
 		const hash = crypto.createHmac('sha256', this.rootKey.iv)
 			.update(file)
 			.digest('hex');
 		return hash;
 	}
 }
-
 
 class KeyManagedVFS {
 	constructor( keys, vfs ){
@@ -174,18 +180,16 @@ class KeyManagedVFS {
 	}
 
 	async putBytes( file, bytes ){
-		const encryptedFileName = await this.keys.nameForFile(file);
-		const outputStream = await this.createWritableStream(encryptedFileName);
+		const outputStream = await this.createWritableStream(file);
 		const done = promiseEvent(outputStream,"finish");
 		outputStream.end(bytes);
 		await done;
 	}
 
 	async asBytes( file ){
-		const encryptedFileName = await this.keys.nameForFile(file);
 		const buffer = new MemoryWritable();
-		const inputStream = await this.createReadableStream(encryptedFileName);
-		await promisePiped(inputStream,buffer);
+		const inputStream = await this.createReadableStream(file);
+		await promisePiped(inputStream, buffer);
 		return buffer.bytes;
 	}
 
@@ -199,13 +203,18 @@ class KeyManagedVFS {
 
 	async createReadableStream( file ){
 		const encryptedFileName = await this.keys.nameForFile(file);
-		const inputStream = await this.vfs.createReadableStream(encryptedFileName);
-		const cipherTransform = await this.keys.decipherStreamFor(file);
-		inputStream.pipe(cipherTransform);
-		return cipherTransform;
+		try {
+			const inputStream = await this.vfs.createReadableStream(encryptedFileName);
+			const cipherTransform = await this.keys.decipherStreamFor(file);
+			inputStream.pipe(cipherTransform);
+			return cipherTransform;
+		}catch(e){
+			throw new Error("Unable to create readable stream for " + file + " because " + e.message);
+		}
 	}
 
 	async exists(file){
+		this.keys.requireUnsealed("vfs.exists");
 		const encryptedFileName = await this.keys.nameForFile(file);
 		return await this.vfs.exists(encryptedFileName);
 	}

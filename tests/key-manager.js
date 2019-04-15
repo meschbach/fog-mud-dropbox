@@ -3,7 +3,8 @@ const {expect} = require("chai");
 const {promisify} = require("util");
 const {Transform, Writable, Readable} = require("stream");
 
-const {InMemoryVFS} = require("../junk");
+const {InMemoryVFS, MemoryWritable} = require("../junk");
+const {promiseEvent} = require("junk-bucket/future");
 const {KeyStore} = require("../keystore");
 
 const testScrypt = {
@@ -59,6 +60,7 @@ describe("KeyStore", function () {
 				const rawBytes = await this.vfs.asBytes("vfs-write");
 				expect( rawBytes ).to.not.deep.eq(example);
 			});
+
 			it("is readable again", async function() {
 				const example = Buffer.from("Time is calling by name", "utf-8");
 				const name = "enchantment";
@@ -67,6 +69,20 @@ describe("KeyStore", function () {
 				await encryptedVFS.putBytes(name, example);
 				const rawBytes = await encryptedVFS.asBytes(name);
 				expect( rawBytes ).to.deep.eq(example);
+			});
+
+			it("can mix putBytes and createReadStream", async function() {
+				const example = Buffer.from("Oh no, I said it again", "utf-8");
+				const name = "clocks";
+
+				const encryptedVFS = await this.keyManager.asVFS();
+				await encryptedVFS.putBytes(name, example);
+				const istream = await encryptedVFS.createReadableStream(name);
+				const buffer = new MemoryWritable();
+				const done = promiseEvent(buffer,"finish");
+				istream.pipe(buffer);
+				await done;
+				expect( buffer.bytes ).to.deep.eq(example);
 			});
 		});
 
