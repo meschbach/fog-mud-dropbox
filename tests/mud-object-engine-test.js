@@ -19,7 +19,7 @@ describe("MudObjectEngine", function () {
 	describe("Given an initially empty Mud setup", function () {
 		describe("When it attempts to backup", function () {
 			it("does nothing", async function () {
-				await performBackupIteration({modified:[], created:[], destroyed:[]});
+				await performBackupIteration({modified:[], created:[], destroyed:[]}, new FakeMudVFS(), new InMemoryVFS());
 			});
 		});
 	});

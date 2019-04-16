@@ -24,10 +24,10 @@
     "dropbox": "4.0.17",
     "isomorphic-fetch": "2.2.1",
     "junk-bucket": "1.1.1",
-    "mocha": "6.1.2",
-    "fog-mud-service": "https://github.com/meschbach/fog-mud-service.git#master"
+    "fog-mud-service": "https://github.com/meschbach/fog-mud-service.git#57ee964"
   },
   "devDependencies": {
-    "bunyan-format": "^0.2.1"
+    "bunyan-format": "^0.2.1",
+    "mocha": "6.1.3"
   }
 }
