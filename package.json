@@ -27,7 +27,7 @@
     "fog-mud-service": "https://github.com/meschbach/fog-mud-service.git#57ee964"
   },
   "devDependencies": {
-    "bunyan-format": "^0.2.1",
+    "bunyan-format": "0.2.1",
     "mocha": "6.1.3"
   }
 }
