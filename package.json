@@ -23,8 +23,8 @@
     "chai": "4.2.0",
     "dropbox": "4.0.17",
     "isomorphic-fetch": "2.2.1",
-    "junk-bucket": "1.1.1",
-    "fog-mud-service": "https://github.com/meschbach/fog-mud-service.git#57ee964"
+    "junk-bucket": "https://github.com/meschbach/js-junk-bucket#85e77dc",
+    "fog-mud-service": "https://github.com/meschbach/fog-mud-service.git#af6d6aa"
   },
   "devDependencies": {
     "bunyan-format": "0.2.1",

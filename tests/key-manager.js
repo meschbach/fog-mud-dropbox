@@ -57,7 +57,7 @@ describe("KeyStore", function () {
 
 				const encryptedVFS = await this.keyManager.asVFS();
 				await encryptedVFS.putBytes("vfs-write", example);
-				const rawBytes = await this.vfs.asBytes("vfs-write");
+				const rawBytes = await this.vfs.asBytes(await this.keyManager.nameForFile("vfs-write"));
 				expect( rawBytes ).to.not.deep.eq(example);
 			});
 
